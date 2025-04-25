@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>C DO — TODOs in C</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+  <style>
+    :root {
+      /* Light theme variables */
+      --bg-primary: #f0f4f8;
+      --bg-secondary: #ffffff;
+      --text-primary: #1a202c;
+      --text-secondary: #4a5568;
+      --text-tertiary: #718096;
+      --accent: #6d28d9;
+      --accent-light: #ede9fe;
+      --accent-dark: #5b21b6;
+      --border: #e2e8f0;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      --success: #10b981;
+      --success-hover: #059669;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --completed: #94a3b8;
+      --card-bg: #ffffff;
+      --input-bg: #f8fafc;
+      --header-gradient: linear-gradient(135deg, #6d28d9, #8b5cf6);
+    }
+
+    [data-theme="dark"] {
+      /* Dark theme variables */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-tertiary: #94a3b8;
+      --accent: #a78bfa;
+      --accent-light: #2e1065;
+      --accent-dark: #c4b5fd;
+      --border: #334155;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+      --success: #34d399;
+      --success-hover: #10b981;
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --completed: #64748b;
+      --card-bg: #1e293b;
+      --input-bg: #334155;
+      --header-gradient: linear-gradient(135deg, #7c3aed, #a78bfa);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+    }
+
+    .app-container {
+      max-width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: var(--header-gradient);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.1)' fill-rule='evenodd'/%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+      z-index: 10;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .theme-toggle i {
+      font-size: 1.2rem;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.05em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
+      margin-bottom: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem 1rem;
+      max-width: 700px;
+      margin: 0 auto;
+      width: 100%;
+      position: relative;
+      margin-top: -60px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .form-container {
+      padding: 2rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 1.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      font-size: 1.2rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 1rem 1.2rem 1rem 3rem;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      background-color: var(--input-bg);
+      color: var(--text-primary);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.1);
+    }
+
+    button {
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      border: none;
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(109, 40, 217, 0.2);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: var(--success-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    .todo-list-container {
+      padding: 0 1rem 1rem;
+    }
+
+    .todo-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .todo-list-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .todo-count {
+      background-color: var(--accent-light);
+      color: var(--accent);
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .todo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .todo-item {
+      padding: 1.5rem;
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .todo-item:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+
+    .todo-item.completed::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background-color: var(--success);
+    }
+
+    .todo-item.completed .todo-title,
+    .todo-item.completed .todo-description {
+      text-decoration: line-through;
+      color: var(--completed);
+    }
+
+    .todo-content {
+      margin-bottom: 1.25rem;
+    }
+
+    .todo-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .todo-description {
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .todo-meta {
+      font-size: 0.875rem;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .todo-meta i {
+      font-size: 1rem;
+    }
+
+    .todo-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .todo-actions button {
+      flex: 1;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-tertiary);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .empty-state-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .empty-state-description {
+      color: var(--text-secondary);
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-tertiary);
+    }
+
+    .loading i {
+      font-size: 2rem;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--text-tertiary);
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 640px) {
+      .header {
+        padding: 2rem 1rem;
+      }
+      
+      h1 {
+        font-size: 2.5rem;
+      }
+      
+      .main-content {
+        padding: 1.5rem 1rem;
+        margin-top: -40px;
+      }
+      
+      .form-container {
+        padding: 1.5rem;
+      }
+      
+      .todo-item {
+        padding: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+        <i class="ri-moon-line"></i>
+      </button>
+       <span style="display: flex; width: 100%; align-items: center; justify-content: center; column-gap: 0.5rem;">
+         <img src="favicon.ico" style="aspect-ratio: 1:1; width: 60px;" />
+         <h1 style="margin-bottom: 0;">C DO</h1>
+      </span>
+      <p class="subtitle">Simple and elegant task management</p>
+    </header>
+
+    <main class="main-content">
+      <div class="card">
+        <div class="form-container">
+          <form id="todo-form">
+            <div class="input-group">
+              <i class="ri-task-line"></i>
+              <input type="text" id="title" placeholder="What needs to be done?" required />
+            </div>
+            <div class="input-group">
+              <i class="ri-file-list-line"></i>
+              <textarea id="description" placeholder="Add details about your task..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="ri-add-line"></i> Add Task
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="todo-list-header">
+          <h2 class="todo-list-title">Your Tasks</h2>
+          <span class="todo-count" id="todo-count">0 tasks</span>
+        </div>
+        <div class="todo-list-container">
+          <div id="loading" class="loading">
+            <i class="ri-loader-4-line"></i>
+          </div>
+          <div id="todo-list" class="todo-list"></div>
+          <div id="empty-state" class="empty-state" style="display: none;">
+            <i class="ri-inbox-line"></i>
+            <h3 class="empty-state-title">No tasks yet</h3>
+            <p class="empty-state-description">Add your first task using the form above</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>C DO — TODOs in C • Made with ❤️</p>
+    </footer>
+  </div>
+
+  <script>
+    // Theme handling
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = themeToggle.querySelector('i');
+    
+    // Check for saved theme preference or use system preference
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Set initial theme
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      themeIcon.classList.replace('ri-moon-line', 'ri-sun-line');
+    }
+    
+    // Toggle theme
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      
+      // Update icon
+      if (newTheme === 'dark') {
+        themeIcon.classList.replace('ri-moon-line', 'ri-sun-line');
+      } else {
+        themeIcon.classList.replace('ri-sun-line', 'ri-moon-line');
+      }
+    });
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (!localStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        
+        // Update icon
+        if (newTheme === 'dark') {
+          themeIcon.classList.replace('ri-moon-line', 'ri-sun-line');
+        } else {
+          themeIcon.classList.replace('ri-sun-line', 'ri-moon-line');
+        }
+      }
+    });
+
+    // Todo functionality
+    const loadingElement = document.getElementById('loading');
+    const emptyState = document.getElementById('empty-state');
+    const todoCountElement = document.getElementById('todo-count');
+    
+    async function fetchTodos() {
+      try {
+        loadingElement.style.display = 'block';
+        const res = await fetch('/api/get_all');
+        const todos = await res.json();
+        const list = document.getElementById('todo-list');
+        list.innerHTML = '';
+        
+        // Update todo count
+        updateTodoCount(todos.length);
+        
+        if (todos.length === 0) {
+          emptyState.style.display = 'block';
+        } else {
+          emptyState.style.display = 'none';
+          
+          for (const todo of todos) {
+            const item = document.createElement('div');
+            item.className = 'todo-item' + (todo.completed ? ' completed' : '');
+            item.innerHTML = `
+              <div class="todo-content">
+                <div class="todo-title">${todo.title}</div>
+                ${todo.description ? `<div class="todo-description">${todo.description}</div>` : ''}
+                <div class="todo-meta">
+                  <i class="ri-time-line"></i>
+                  <span>Created: ${todo.created_at}</span>
+                </div>
+              </div>
+              <div class="todo-actions">
+                <button class="btn ${todo.completed ? 'btn-success' : 'btn-success'}" onclick="markTodo(${todo.id}, ${todo.completed ? 0 : 1})">
+                  <i class="ri-${todo.completed ? 'refresh-line' : 'check-line'}"></i>
+                  ${todo.completed ? 'Unmark' : 'Complete'}
+                </button>
+                <button class="btn btn-danger" onclick="deleteTodo(${todo.id})">
+                  <i class="ri-delete-bin-line"></i>
+                  Delete
+                </button>
+              </div>
+            `;
+            list.appendChild(item);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching todos:', error);
+      } finally {
+        loadingElement.style.display = 'none';
+      }
+    }
+    
+    function updateTodoCount(count) {
+      todoCountElement.textContent = `${count} ${count === 1 ? 'task' : 'tasks'}`;
+    }
+
+    async function markTodo(id, completed) {
+      try {
+        await fetch('/api/mark', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, completed })
+        });
+        fetchTodos();
+      } catch (error) {
+        console.error('Error marking todo:', error);
+      }
+    }
+
+    async function deleteTodo(id) {
+      try {
+        await fetch('/api/remove', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        fetchTodos();
+      } catch (error) {
+        console.error('Error deleting todo:', error);
+      }
+    }
+
+    document.getElementById('todo-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+
+      try {
+        await fetch('/api/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, description })
+        });
+
+        e.target.reset();
+        fetchTodos();
+      } catch (error) {
+        console.error('Error adding todo:', error);
+      }
+    });
+
+    // Initial fetch
+    fetchTodos();
+  </script>
+</body>
+</html>
