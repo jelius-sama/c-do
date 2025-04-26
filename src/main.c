@@ -9,13 +9,15 @@
 #include <arpa/inet.h>
 #include <limits.h>
 #include <sqlite3.h>
-#include <time.h>
 #include "cjson/cJSON.h"
+#include <signal.h>
 
 #define PORT 6969
 #define MAX_CONN 5
-#define SA struct sockaddr 
+#define SA struct sockaddr
 #define MAX_REQUEST_SIZE 4096
+
+int sockfd, clientfd;
 
 typedef struct {
      char *data;
@@ -41,6 +43,7 @@ response *api_handler(char path[1024], char method[8], char *root_path, char *bo
 	response *resp = (response*)malloc(sizeof(response));
 
 	rc = sqlite3_open(sql_path, &db);
+	
 	if(rc) {
 		errorf("Could not open database: %s", sqlite3_errmsg(db));
 		return NULL;
@@ -222,14 +225,34 @@ response *route_handler(char path[1024], char method[8], char *root_path, char *
 	return resp;
 }
 
+void exit_handler() {
+    printf("\n\n");
+    infof("Exit signal received, gracefully shutting down the server.");
+
+    if (sockfd >= 0) close(sockfd);
+    if (clientfd >= 0) close(clientfd);
+
+    exit(0);
+}
+
 int main() {
+	// Handler gracefully shutting down the server
+	struct sigaction SIGNAL;
+	SIGNAL.sa_handler = exit_handler;
+	sigemptyset(&SIGNAL.sa_mask);
+	SIGNAL.sa_flags = 0;
+
+	if (sigaction(SIGINT, &SIGNAL, NULL) == -1) {
+		panicf("Failed to install sigation");
+	}
+
 	char root_path[PATH_MAX];
 	
 	todof("Make it work on a niche OS for gamers named Doors 😂 or was it Windows 🤣");
 	ssize_t len = readlink("/proc/self/exe", root_path, sizeof(root_path) - 1);
 	if (len != -1) {
 		root_path[len] = '\0';
-		for (size_t i = 1; i <= 2; ++i) {
+		for (int i = 1; i <= 2; ++i) {
 			char *last_slash = strrchr(root_path, '/');
 			if (last_slash) *last_slash = '\0';
 		}
@@ -239,12 +262,11 @@ int main() {
 		panicf("Could not read the project's root directory, terminating...");
 	}
 
-	int sockfd, connfd;
 	socklen_t client_len;
 	struct sockaddr_in servaddr, client;
 	char *err_file_path; asprintf(&err_file_path, "%s%s", root_path, "/assets/500.html");
-	FILE *err_file = fopen(err_file_path, "rb");
 	char *err_template;
+	FILE *err_file = fopen(err_file_path, "rb");
 	long err_file_len;
 	char *err_header; hprintf(&err_header, "500 Internal Server Error", "text/html; charset=utf-8");
 
@@ -290,15 +312,15 @@ int main() {
 	// Accepting the connections
 	for (;;) {
 		client_len = sizeof(client);
-		connfd = accept(sockfd, (SA*)&client, &client_len); 
-		if (connfd < 0) {
+		clientfd = accept(sockfd, (SA*)&client, &client_len); 
+		if (clientfd < 0) {
 			errorf("could not accept client...\n");
 			continue;
 		}
 
 		char buffer[MAX_REQUEST_SIZE];
 		memset(buffer, 0, MAX_REQUEST_SIZE);
-		ssize_t bytes_read = read(connfd, buffer, sizeof(buffer) - 1);
+		ssize_t bytes_read = read(clientfd, buffer, sizeof(buffer) - 1);
 
 		if (bytes_read > 0) {
 			buffer[bytes_read] = '\0';
@@ -316,18 +338,18 @@ int main() {
 			response *raw_resp = route_handler(path, method, root_path, body);
 
 			if (raw_resp == NULL) {
-				write(connfd, err_header, strlen(err_header));
-				write(connfd, err_template, err_file_len);
-				close(connfd);
+				write(clientfd, err_header, strlen(err_header));
+				write(clientfd, err_template, err_file_len);
+				close(clientfd);
         		        errorf("Encountered error when processing request.");
 				continue;
 			} else {
-				write(connfd, raw_resp->header, strlen(raw_resp->header));
-				write(connfd, raw_resp->data, raw_resp->data_len);
+				write(clientfd, raw_resp->header, strlen(raw_resp->header));
+				write(clientfd, raw_resp->data, raw_resp->data_len);
 				free(raw_resp->data);
 				free(raw_resp->header);
 				free(raw_resp);
-				close(connfd);
+				close(clientfd);
 			}
 		}
 	}
