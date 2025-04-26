@@ -1,7 +1,17 @@
-build: 
-	mkdir -p bin db
-	clang -DDEBUG -o bin/c-do src/main.c src/cjson/cJSON.c -l sqlite3 -Wall -Wextra
+CC = clang
+CFLAGS = -Wall -Wextra
+LDFLAGS = -lsqlite3
+SRC := $(shell find src -name '*.c')
+OUT = bin/c-do
 
-release:
+build: CFLAGS += -DDEBUG
+build: all
+
+release: all
+
+all:
 	mkdir -p bin db
-	clang -o bin/c-do src/main.c src/cjson/cJSON.c -l sqlite3 -Wall -Wextra
+	$(CC) $(CFLAGS) -o $(OUT) $(SRC) $(LDFLAGS)
+
+clean:
+	rm -rf bin db
